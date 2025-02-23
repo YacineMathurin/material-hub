@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import {
   Search,
-  ShoppingCart,
   Printer,
   LogIn,
   Plus,
@@ -14,7 +13,6 @@ import {
   Twitter,
   Instagram,
   Linkedin,
-  Github,
   Mail,
 } from "lucide-react";
 
@@ -27,6 +25,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Sample data remains the same
 const materials = [
@@ -36,33 +41,56 @@ const materials = [
   { id: 4, name: "Lumber 2x4", price: 8.99, unit: "piece" },
   { id: 5, name: "Plywood Sheet", price: 32.99, unit: "sheet" },
 ];
-
+const categories = [
+  "Concrete Materials",
+  "Steel Materials",
+  "Wood Materials",
+  "Masonry",
+  "Other",
+];
 const MaterialsSearch = () => {
-  // ... [Previous state and functions remain the same] ...
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [tempItem, setTempItem] = useState(null);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
 
   const filteredMaterials = materials.filter((material) =>
     material.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const addItem = (material) => {
-    const existingItem = selectedItems.find((item) => item.id === material.id);
-    if (existingItem) {
-      setSelectedItems(
-        selectedItems.map((item) =>
-          item.id === material.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      setSelectedItems([...selectedItems, { ...material, quantity: 1 }]);
-    }
+    setTempItem(material);
+    setShowCategoryDialog(true);
     setShowResults(false);
     setSearchTerm("");
+  };
+
+  const confirmAddItem = (category) => {
+    if (tempItem) {
+      const existingItem = selectedItems.find(
+        (item) => item.id === tempItem.id
+      );
+      if (existingItem) {
+        setSelectedItems(
+          selectedItems.map((item) =>
+            item.id === tempItem.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
+      } else {
+        setSelectedItems([
+          ...selectedItems,
+          { ...tempItem, quantity: 1, category },
+        ]);
+      }
+      setTempItem(null);
+      setShowCategoryDialog(false);
+      setSelectedCategory("");
+    }
   };
 
   const updateQuantity = (id, change) => {
@@ -79,6 +107,28 @@ const MaterialsSearch = () => {
     setSelectedItems(selectedItems.filter((item) => item.id !== id));
   };
 
+  const updateCategory = (id, newCategory) => {
+    setSelectedItems(
+      selectedItems.map((item) =>
+        item.id === id ? { ...item, category: newCategory } : item
+      )
+    );
+  };
+
+  // Group items by category and calculate category subtotals
+  const groupedItems = selectedItems.reduce((acc, item) => {
+    const category = item.category || "Uncategorized";
+    if (!acc[category]) {
+      acc[category] = {
+        items: [],
+        subtotal: 0,
+      };
+    }
+    acc[category].items.push(item);
+    acc[category].subtotal += item.price * item.quantity;
+    return acc;
+  }, {});
+
   const total = selectedItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -86,7 +136,7 @@ const MaterialsSearch = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar remains the same */}
+      {/* Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -159,7 +209,7 @@ const MaterialsSearch = () => {
         </div>
       </nav>
 
-      {/* Updated Hero Section with modern colors */}
+      {/* Hero Section */}
       <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.2] bg-grid-8"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/[0.2] to-transparent"></div>
@@ -204,7 +254,7 @@ const MaterialsSearch = () => {
         </div>
       </div>
 
-      {/* Rest of the content remains the same */}
+      {/* Main */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         <Card className="border-0 shadow-none bg-card-none">
           <CardHeader className="pl-0">
@@ -221,10 +271,10 @@ const MaterialsSearch = () => {
                   setShowResults(true);
                 }}
                 className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl 
-    shadow-sm transition-all duration-300 ease-in-out
-    hover:border-purple-400 hover:bg-white
-    focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none
-    placeholder:text-gray-400"
+                shadow-sm transition-all duration-300 ease-in-out
+                hover:border-purple-400 hover:bg-white
+                focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none
+                placeholder:text-gray-400"
               />
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
 
@@ -248,68 +298,155 @@ const MaterialsSearch = () => {
           </CardContent>
         </Card>
 
+        {showCategoryDialog && tempItem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="text-lg font-semibold mb-4">
+                Select Category for {tempItem.name}
+              </h3>
+              <Select
+                value={selectedCategory}
+                onValueChange={(value) => setSelectedCategory(value)}
+              >
+                <SelectTrigger className="w-full mb-4">
+                  <SelectValue placeholder="Choose a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCategoryDialog(false);
+                    setTempItem(null);
+                    setSelectedCategory("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => confirmAddItem(selectedCategory)}
+                  disabled={!selectedCategory}
+                >
+                  Add Item
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Card>
           <CardHeader>
-            <CardTitle>Selected Materials</CardTitle>
+            <CardTitle>Selected Materials by Category</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {selectedItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-medium">{item.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      ${item.price}/{item.unit}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateQuantity(item.id, -1)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-12 text-center">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateQuantity(item.id, 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+            <div className="space-y-8">
+              {Object.entries(groupedItems).map(
+                ([category, { items, subtotal }]) => (
+                  <div
+                    key={category}
+                    className="border rounded-lg p-4 bg-white shadow-sm"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {category}
+                      </h3>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">
+                          Category Subtotal
+                        </p>
+                        <p className="font-semibold">${subtotal.toFixed(2)}</p>
+                      </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="space-y-4">
+                      {items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex-1">
+                            <h3 className="font-medium">{item.name}</h3>
+                            <p className="text-sm text-gray-600">
+                              ${item.price}/{item.unit}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Subtotal: $
+                              {(item.price * item.quantity).toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <Select
+                              value={item.category}
+                              onValueChange={(value) =>
+                                updateCategory(item.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categories.map((category) => (
+                                  <SelectItem key={category} value={category}>
+                                    {category}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => updateQuantity(item.id, -1)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <span className="w-12 text-center">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => updateQuantity(item.id, 1)}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500"
+                              onClick={() => removeItem(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <div className="text-xl font-bold">Total: ${total.toFixed(2)}</div>
-            <Button
-              className="flex items-center gap-2"
-              onClick={() =>
-                window.open("http://localhost:5000/generate-pdf", "_blank")
-              }
-            >
+          <CardFooter className="flex justify-between items-center border-t pt-6">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Order Total</p>
+              <p className="text-2xl font-bold">${total.toFixed(2)}</p>
+            </div>
+            <Button className="flex items-center gap-2">
               <Printer className="h-4 w-4" /> Generate PDF
             </Button>
           </CardFooter>
         </Card>
       </div>
-      {/* New Footer Section */}
+
+      {/* Footer Section */}
       <footer className="bg-white mt-auto mt-24">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
