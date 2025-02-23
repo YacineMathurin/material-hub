@@ -191,7 +191,7 @@ const MaterialsSearch = () => {
                 </Button>
               </div>
             </div>
-            <div className="hidden md:block">
+            {/* <div className="hidden md:block">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl transform hover:scale-105 transition-transform duration-300">
                 <img
                   src="/api/placeholder/600/400"
@@ -199,7 +199,7 @@ const MaterialsSearch = () => {
                   className="rounded-lg w-full"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -220,7 +220,11 @@ const MaterialsSearch = () => {
                   setSearchTerm(e.target.value);
                   setShowResults(true);
                 }}
-                className="pl-10"
+                className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl 
+    shadow-sm transition-all duration-300 ease-in-out
+    hover:border-purple-400 hover:bg-white
+    focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none
+    placeholder:text-gray-400"
               />
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
 
@@ -294,7 +298,12 @@ const MaterialsSearch = () => {
           </CardContent>
           <CardFooter className="flex justify-between">
             <div className="text-xl font-bold">Total: ${total.toFixed(2)}</div>
-            <Button className="flex items-center gap-2">
+            <Button
+              className="flex items-center gap-2"
+              onClick={() =>
+                window.open("http://localhost:5000/generate-pdf", "_blank")
+              }
+            >
               <Printer className="h-4 w-4" /> Generate PDF
             </Button>
           </CardFooter>
@@ -381,12 +390,6 @@ const MaterialsSearch = () => {
                   className="text-gray-600 hover:text-blue-700 transition duration-200"
                 >
                   <Linkedin className="h-6 w-6" />
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-600 hover:text-gray-900 transition duration-200"
-                >
-                  <Github className="h-6 w-6" />
                 </a>
               </div>
             </div>
