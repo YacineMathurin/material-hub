@@ -442,7 +442,12 @@ const MaterialsSearch = () => {
               <p className="text-sm text-gray-600 mb-1">Order Total</p>
               <p className="text-2xl font-bold">${total.toFixed(2)}</p>
             </div>
-            <Button className="flex items-center gap-2">
+            <Button
+              className="flex items-center gap-2"
+              onClick={() =>
+                window.open("http://localhost:5000/generate-pdf", "_blank")
+              }
+            >
               <Printer className="h-4 w-4" /> Generate PDF
             </Button>
           </CardFooter>
