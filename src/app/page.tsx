@@ -380,14 +380,15 @@ const MaterialsSearch = () => {
                               {(item.price * item.quantity).toFixed(2)}
                             </p>
                           </div>
-                          <div className="flex items-center gap-4">
+
+                          <div className="flex flex-col md:flex-row items-center gap-4">
                             <Select
                               value={item.category}
                               onValueChange={(value) =>
                                 updateCategory(item.id, value)
                               }
                             >
-                              <SelectTrigger className="w-40">
+                              <SelectTrigger className="w-full md:w-40">
                                 <SelectValue placeholder="Select category" />
                               </SelectTrigger>
                               <SelectContent>
@@ -398,7 +399,8 @@ const MaterialsSearch = () => {
                                 ))}
                               </SelectContent>
                             </Select>
-                            <div className="flex items-center gap-2">
+
+                            <div className="flex items-center gap-2 w-full md:w-auto justify-center">
                               <Button
                                 variant="outline"
                                 size="icon"
@@ -417,6 +419,7 @@ const MaterialsSearch = () => {
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </div>
+
                             <Button
                               variant="ghost"
                               size="icon"
