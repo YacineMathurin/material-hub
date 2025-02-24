@@ -24,48 +24,6 @@ const s3 = new S3Client({
   },
 });
 
-// Grouping items (sample data)
-const groupedItems = {
-  Concrete: {
-    items: [
-      {
-        name: "Portland Cement",
-        quantity: 50,
-        unit: "Bags",
-        price: 15.99,
-        amount: 799.5,
-      },
-      {
-        name: "Concrete Blocks",
-        quantity: 500,
-        unit: "Pieces",
-        price: 2.75,
-        amount: 1375.0,
-      },
-    ],
-    subtotal: 2174.5,
-  },
-  Steel: {
-    items: [
-      {
-        name: "Steel Rebar (12mm)",
-        quantity: 100,
-        unit: "Pieces",
-        price: 25.5,
-        amount: 2550.0,
-      },
-      {
-        name: "Steel Wire Mesh",
-        quantity: 20,
-        unit: "Sheets",
-        price: 45.0,
-        amount: 900.0,
-      },
-    ],
-    subtotal: 3450.0,
-  },
-};
-
 // Function to calculate totals
 const calculateTotals = (groupedItems) => {
   let subtotal = 0;
