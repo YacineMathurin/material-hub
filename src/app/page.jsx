@@ -32,6 +32,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // Sample data remains the same
 const materials = [
@@ -56,10 +63,22 @@ const MaterialsSearch = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [tempItem, setTempItem] = useState(null);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [error, setError] = useState(null);
+  const [errorMargin, setErrorMargin] = useState(0);
 
   const filteredMaterials = materials.filter((material) =>
     material.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const updateItemQuantity = (id, newQuantity) => {
+    setSelectedItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
+      )
+    );
+  };
 
   const addItem = (material) => {
     setTempItem(material);
@@ -134,6 +153,53 @@ const MaterialsSearch = () => {
     0
   );
 
+  const generatePDF = async () => {
+    setIsGenerating(true);
+    setPdfUrl(null);
+    setError(null);
+
+    console.log({ groupedItems });
+    try {
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "title",
+          content: "content",
+          groupedItems,
+          errorMargin,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("PDF generated:", data);
+        setPdfUrl(data.pdfUrl);
+      } else {
+        console.error("Failed to generate PDF", response);
+        setError("Failed to generate PDF. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during request:", error);
+      setError("An error occurred while generating the PDF.");
+    } finally {
+      // We keep the modal open even after generation completes
+      // It will only close when user clicks Close or Open PDF
+    }
+  };
+
+  const handleOpenPDF = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, "_blank");
+    }
+  };
+
+  const handleClose = () => {
+    setIsGenerating(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
@@ -150,12 +216,12 @@ const MaterialsSearch = () => {
               <a href="#" className="text-gray-600 hover:text-gray-900">
                 Home
               </a>
-              <a href="/about" className="text-gray-600 hover:text-gray-900">
+              {/* <a href="/about" className="text-gray-600 hover:text-gray-900">
                 About
               </a>
               <a href="/contact" className="text-gray-600 hover:text-gray-900">
                 Contact
-              </a>
+              </a> */}
               <Button variant="outline" className="flex items-center gap-2">
                 <LogIn className="h-4 w-4" /> Login
               </Button>
@@ -184,7 +250,7 @@ const MaterialsSearch = () => {
               >
                 Home
               </a>
-              <a
+              {/* <a
                 href="/about"
                 className="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
               >
@@ -195,7 +261,7 @@ const MaterialsSearch = () => {
                 className="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
               >
                 Contact
-              </a>
+              </a> */}
               <div className="px-4 pt-2">
                 <Button
                   variant="outline"
@@ -210,7 +276,7 @@ const MaterialsSearch = () => {
       </nav>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-700 via-blue-500 to-teal-400 relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.2] bg-grid-8"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/[0.2] to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative">
@@ -255,7 +321,7 @@ const MaterialsSearch = () => {
       </div>
 
       {/* Main */}
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 space-y-6 min-h-screen">
         <Card className="border-0 shadow-none bg-card-none">
           <CardHeader className="pl-0">
             <CardTitle>Search Materials</CardTitle>
@@ -408,9 +474,16 @@ const MaterialsSearch = () => {
                               >
                                 <Minus className="h-4 w-4" />
                               </Button>
-                              <span className="w-12 text-center">
-                                {item.quantity}
-                              </span>
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value) || 1;
+                                  updateItemQuantity(item.id, value);
+                                }}
+                                min="1"
+                                className="w-16 text-center border rounded p-1"
+                              />
                               <Button
                                 variant="outline"
                                 size="icon"
@@ -437,22 +510,91 @@ const MaterialsSearch = () => {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between items-center border-t pt-6">
+          <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t pt-6 gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-1">Order Total</p>
               <p className="text-2xl font-bold">${total.toFixed(2)}</p>
+              {errorMargin > 0 && (
+                <p className="text-sm text-gray-600">
+                  With {errorMargin}% margin: $
+                  {(total * (1 + errorMargin / 100)).toFixed(2)}
+                </p>
+              )}
             </div>
-            <Button
-              className="flex items-center gap-2"
-              onClick={() =>
-                window.open("http://localhost:5000/generate-pdf", "_blank")
-              }
-            >
-              <Printer className="h-4 w-4" /> Generate PDF
-            </Button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">Error Margin:</span>
+                <Select
+                  value={errorMargin.toString()}
+                  onValueChange={(value) => setErrorMargin(parseInt(value))}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="0%" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0%</SelectItem>
+                    <SelectItem value="5">5%</SelectItem>
+                    <SelectItem value="10">10%</SelectItem>
+                    <SelectItem value="15">15%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="flex items-center gap-2" onClick={generatePDF}>
+                <Printer className="h-4 w-4" /> Generate PDF
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       </div>
+
+      <Dialog open={isGenerating} onOpenChange={setIsGenerating}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {!pdfUrl && !error
+                ? "Generating PDF..."
+                : error
+                ? "Error"
+                : "PDF Generated"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            {!pdfUrl && !error && (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-2">
+                  Please wait while we generate your PDF...
+                </span>
+              </div>
+            )}
+
+            {error && <div className="text-red-500">{error}</div>}
+
+            {pdfUrl && (
+              <div className="text-green-500">
+                Your PDF has been successfully generated!
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="sm:justify-between">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="mt-2 sm:mt-0"
+            >
+              Close
+            </Button>
+
+            {pdfUrl && (
+              <Button onClick={handleOpenPDF} className="mt-2 sm:mt-0">
+                Open PDF
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer Section */}
       <footer className="bg-white mt-auto mt-24">

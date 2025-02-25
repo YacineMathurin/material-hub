@@ -1,16 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import {
-  User,
-  Building2,
-  Phone,
-  Mail,
-  FileText,
-  ImagePlus,
-  Save,
-  Eye,
-} from "lucide-react";
+import { Phone, Mail, FileText, ImagePlus, Save, Eye } from "lucide-react";
 
 import {
   Card,
@@ -27,7 +18,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
