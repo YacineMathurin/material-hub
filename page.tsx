@@ -66,10 +66,19 @@ const MaterialsSearch = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [error, setError] = useState(null);
+  const [errorMargin, setErrorMargin] = useState(0);
 
   const filteredMaterials = materials.filter((material) =>
     material.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const updateItemQuantity = (id, newQuantity) => {
+    setSelectedItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
+      )
+    );
+  };
 
   const addItem = (material) => {
     setTempItem(material);
@@ -161,6 +170,7 @@ const MaterialsSearch = () => {
           title: "title",
           content: "content",
           groupedItems,
+          errorMargin
         }),
       });
 
@@ -465,9 +475,16 @@ const MaterialsSearch = () => {
                               >
                                 <Minus className="h-4 w-4" />
                               </Button>
-                              <span className="w-12 text-center">
-                                {item.quantity}
-                              </span>
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value) || 1;
+                                  updateItemQuantity(item.id, value);
+                                }}
+                                min="1"
+                                className="w-16 text-center border rounded p-1"
+                              />
                               <Button
                                 variant="outline"
                                 size="icon"
@@ -494,17 +511,41 @@ const MaterialsSearch = () => {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between items-center border-t pt-6">
+          <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t pt-6 gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-1">Order Total</p>
               <p className="text-2xl font-bold">${total.toFixed(2)}</p>
+              {errorMargin > 0 && (
+                <p className="text-sm text-gray-600">
+                  With {errorMargin}% margin: ${(total * (1 + errorMargin / 100)).toFixed(2)}
+                </p>
+              )}
             </div>
-            <Button
-              className="flex items-center gap-2"
-              onClick={generatePDF}
-            >
-              <Printer className="h-4 w-4" /> Generate PDF
-            </Button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">Error Margin:</span>
+                <Select
+                  value={errorMargin.toString()}
+                  onValueChange={(value) => setErrorMargin(parseInt(value))}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="0%" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0%</SelectItem>
+                    <SelectItem value="5">5%</SelectItem>
+                    <SelectItem value="10">10%</SelectItem>
+                    <SelectItem value="15">15%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                className="flex items-center gap-2"
+                onClick={generatePDF}
+              >
+                <Printer className="h-4 w-4" /> Generate PDF
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       </div>
