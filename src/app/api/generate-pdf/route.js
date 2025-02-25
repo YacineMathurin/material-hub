@@ -212,7 +212,7 @@ export async function POST(req) {
     const { title, content, groupedItems, errorMargin } = data;
 
     // Validate required parameters
-    if (!title || !content || !groupedItems || !errorMargin) {
+    if (!title || !content || !groupedItems) {
       return new Response("Missing required parameters in the request body.", {
         status: 400,
       });
