@@ -4,6 +4,7 @@ import puppeteer from "puppeteer";
 import os from "os";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
+import chromium from "@sparticuz/chromium";
 
 dotenv.config();
 
