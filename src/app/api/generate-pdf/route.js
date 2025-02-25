@@ -231,7 +231,7 @@ export async function POST(req) {
 
     // Set up S3 parameters for uploading the PDF
     const s3Params = {
-      Bucket: AWS_BUCKET_NAME,
+      Bucket: "demo-s3-trainning",
       Key: `pdfs/${fileName}`,
       Body: pdfBuffer,
       ContentType: "application/pdf",
@@ -243,7 +243,7 @@ export async function POST(req) {
       await s3.send(command);
 
       // Construct the S3 URL for the uploaded PDF
-      const pdfUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/pdfs/${fileName}`;
+      const pdfUrl = `https://${"demo-s3-trainning"}.s3.${AWS_REGION}.amazonaws.com/pdfs/${fileName}`;
       console.log(`File uploaded successfully at ${pdfUrl}`);
 
       // Return the PDF URL in the response
