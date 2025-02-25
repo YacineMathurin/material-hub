@@ -172,14 +172,10 @@ const generateHTML = (groupedItems, errorMargin) => {
 // Function to generate the PDF using Puppeteer
 async function generatePDF(htmlTemplate) {
   try {
-    // Ensure Chromium is set up for the Vercel environment
-    chromium.setHeadlessMode(true);
-    chromium.setGraphicsMode(false);
-
     const browser = await puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(), // This works on Vercel
-      headless: chromium.headless,
+      executablePath: await chromium.executablePath(), // Vercel-friendly
+      headless: true, // Ensure headless mode
     });
 
     const page = await browser.newPage();
