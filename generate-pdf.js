@@ -25,7 +25,7 @@ const s3 = new S3Client({
 });
 
 // Function to calculate totals
-const calculateTotals = (groupedItems) => {
+const calculateTotals = (groupedItems, errorMargin) => {
   let subtotal = 0;
 
   // Loop through each category group
@@ -39,9 +39,11 @@ const calculateTotals = (groupedItems) => {
 
   // Calculate tax and total
   const tax = subtotal * 0.1; // 10% tax
-  const total = subtotal + tax;
+  const withMargin = (subtotal + tax) * (errorMargin / 100);
+  // const total = subtotal + tax;
+  const total = subtotal + withMargin + tax;
 
-  return { subtotal, tax, total };
+  return { subtotal, tax, withMargin, total };
 };
 
 // Function to render grouped items to HTML
@@ -72,8 +74,11 @@ const renderItems = (groupedItems) => {
 };
 
 // Function to generate the final HTML content
-const generateHTML = (groupedItems) => {
-  const { subtotal, tax, total } = calculateTotals(groupedItems);
+const generateHTML = (groupedItems, errorMargin) => {
+  const { subtotal, tax, withMargin, total } = calculateTotals(
+    groupedItems,
+    errorMargin
+  );
   const itemsHTML = renderItems(groupedItems);
 
   return `
@@ -86,7 +91,7 @@ const generateHTML = (groupedItems) => {
             .invoice-1 { border-top: 5px solid #2563eb; border-radius: 4px; }
             .logo-container { display: flex; align-items: center; gap: 1rem; }
             .logo { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #2563eb; color: white; }
-            .header { display: flex; justify-content: space-between; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb; }
+            .header { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin: 2rem 0; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb; }
             .addresses { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin: 2rem 0; }
             .address-box { padding: 1rem; background: #f9fafb; border-radius: 4px; }
             table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
@@ -109,7 +114,7 @@ const generateHTML = (groupedItems) => {
                   </svg>
                 </div>
                 <div>
-                  <h1>BuildTech Materials</h1>
+                  <h1>BuildTech</h1>
                   <p>Quality Construction Supplies</p>
                 </div>
               </div>
@@ -155,6 +160,7 @@ const generateHTML = (groupedItems) => {
             <div class="total">
               <p>Subtotal: $${subtotal.toFixed(2)}</p>
               <p>Tax (10%): $${tax.toFixed(2)}</p>
+              <p>Error Marge ($${errorMargin}%): $${withMargin.toFixed(2)}</p>
               <h3>Total: $${total.toFixed(2)}</h3>
             </div>
           </div>
@@ -202,10 +208,10 @@ export async function POST(req) {
     const data = await req.json(); // Get the JSON body from the request
 
     // Extract data from request body
-    const { title, content, groupedItems } = data;
+    const { title, content, groupedItems, errorMargin } = data;
 
     // Validate required parameters
-    if (!title || !content || !groupedItems) {
+    if (!title || !content || !groupedItems || !errorMargin) {
       return new Response("Missing required parameters in the request body.", {
         status: 400,
       });
@@ -219,7 +225,9 @@ export async function POST(req) {
     );
 
     // Generate PDF from the provided HTML
-    const pdfBuffer = await generatePDF(generateHTML(groupedItems));
+    const pdfBuffer = await generatePDF(
+      generateHTML(groupedItems, errorMargin)
+    );
 
     // Get the hostname to use in the filename
     const hostname = os.hostname(); // e.g., "Johns-MacBook"
