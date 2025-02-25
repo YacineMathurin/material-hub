@@ -15,6 +15,13 @@ const {
   AWS_BUCKET_NAME,
 } = process.env;
 
+console.log({
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  AWS_REGION,
+  AWS_BUCKET_NAME,
+});
+
 // Set up AWS S3 configuration for SDK v3
 const s3 = new S3Client({
   region: AWS_REGION,
