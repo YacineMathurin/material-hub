@@ -172,6 +172,7 @@ const MaterialsSearch = () => {
           content: "content",
           groupedItems,
           errorMargin,
+          categoryServicePrices
         }),
       });
 

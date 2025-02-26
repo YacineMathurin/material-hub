@@ -54,7 +54,7 @@ const calculateTotals = (groupedItems, errorMargin) => {
 };
 
 // Function to render grouped items to HTML
-const renderItems = (groupedItems) => {
+const renderItems = (groupedItems, categoryServicePrices) => {
   let htmlContent = "";
   Object.keys(groupedItems).forEach((category) => {
     const group = groupedItems[category];
@@ -71,8 +71,12 @@ const renderItems = (groupedItems) => {
     });
     htmlContent += `
       <tr class="category-subtotal">
-        <td colspan="4">Subtotal</td>
+        <td colspan="4">Subtotal Materials</td>
         <td>$${group.subtotal.toFixed(2)}</td>
+      </tr>
+      <tr class="category-subtotal">
+        <td colspan="4">Service</td>
+        <td>$${categoryServicePrices.category.toFixed(2)}</td>
       </tr>
       <br>
     `;
@@ -81,12 +85,12 @@ const renderItems = (groupedItems) => {
 };
 
 // Function to generate the final HTML content
-const generateHTML = (groupedItems, errorMargin) => {
+const generateHTML = (groupedItems, errorMargin, categoryServicePrices) => {
   const { subtotal, tax, withMargin, total } = calculateTotals(
     groupedItems,
     errorMargin
   );
-  const itemsHTML = renderItems(groupedItems);
+  const itemsHTML = renderItems(groupedItems, categoryServicePrices);
 
   return `
       <!DOCTYPE html>
@@ -209,7 +213,8 @@ export async function POST(req) {
     const data = await req.json(); // Get the JSON body from the request
 
     // Extract data from request body
-    const { title, content, groupedItems, errorMargin } = data;
+    const { title, content, groupedItems, errorMargin, categoryServicePrices } =
+      data;
 
     // Validate required parameters
     if (!title || !content || !groupedItems) {
@@ -222,7 +227,7 @@ export async function POST(req) {
 
     // Generate PDF from the provided HTML
     const pdfBuffer = await generatePDF(
-      generateHTML(groupedItems, errorMargin)
+      generateHTML(groupedItems, errorMargin, categoryServicePrices)
     );
 
     // Get the hostname to use in the filename
