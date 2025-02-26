@@ -55,7 +55,6 @@ const calculateTotals = (groupedItems, errorMargin) => {
 
 // Function to render grouped items to HTML
 const renderItems = (groupedItems, categoryServicePrices) => {
-  log;
   let htmlContent = "";
   Object.keys(groupedItems).forEach((category) => {
     const group = groupedItems[category];
