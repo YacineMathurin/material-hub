@@ -59,6 +59,12 @@ const renderItems = (groupedItems, categoryServicePrices) => {
 
   let htmlContent = "";
   Object.keys(groupedItems).forEach((category) => {
+    console.log({
+      categoryServicePrices,
+      category,
+      service: categoryServicePrices[category],
+    });
+
     const group = groupedItems[category];
     htmlContent += `<tr class="category-header"><td colspan="5">${category} </td></tr>`;
     group.items.forEach((item) => {
@@ -78,6 +84,7 @@ const renderItems = (groupedItems, categoryServicePrices) => {
       </tr>
       <tr class="category-subtotal">
         <td colspan="4">Service</td>
+        <td>$${categoryServicePrices[category]}</td>
       </tr>
       <br>
     `;
