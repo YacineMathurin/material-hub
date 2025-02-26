@@ -67,6 +67,8 @@ const MaterialsSearch = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [error, setError] = useState(null);
   const [errorMargin, setErrorMargin] = useState(0);
+  const [servicePrice, setServicePrice] = useState(0);
+  const [categoryServicePrices, setCategoryServicePrices] = useState({});
 
   const filteredMaterials = materials.filter((material) =>
     material.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -198,6 +200,36 @@ const MaterialsSearch = () => {
 
   const handleClose = () => {
     setIsGenerating(false);
+  };
+
+  // Function to update service price for a specific category
+  const updateCategoryServicePrice = (category, price) => {
+    setCategoryServicePrices((prev) => ({
+      ...prev,
+      [category]: price,
+    }));
+  };
+
+  // Helper function to parse formatted price string to number
+  const parsePriceToNumber = (priceString) => {
+    if (!priceString) return 0;
+    return parseFloat(priceString.replace(/\s/g, ""));
+  };
+
+  // Function to calculate total including service prices
+  const calculateTotal = () => {
+    const materialsTotal = total;
+    const servicePricesTotal = Object.values(categoryServicePrices).reduce(
+      (sum, price) => sum + parsePriceToNumber(price),
+      0
+    );
+
+    return materialsTotal + servicePricesTotal;
+  };
+
+  // Helper function to format price with thousand separators
+  const formatPrice = (price) => {
+    return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   };
 
   return (
@@ -419,16 +451,10 @@ const MaterialsSearch = () => {
                     key={category}
                     className="border rounded-lg p-4 bg-white shadow-sm"
                   >
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="mb-4">
                       <h3 className="text-lg font-semibold text-gray-800">
                         {category}
                       </h3>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">
-                          Category Subtotal
-                        </p>
-                        <p className="font-semibold">${subtotal.toFixed(2)}</p>
-                      </div>
                     </div>
                     <div className="space-y-4">
                       {items.map((item) => (
@@ -443,7 +469,7 @@ const MaterialsSearch = () => {
                             </p>
                             <p className="text-sm text-gray-600">
                               Subtotal: $
-                              {(item.price * item.quantity).toFixed(2)}
+                              {formatPrice(item.price * item.quantity)}
                             </p>
                           </div>
 
@@ -505,6 +531,84 @@ const MaterialsSearch = () => {
                         </div>
                       ))}
                     </div>
+                    <div className="mt-4 p-4 rounded-lg border bg-gray-50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            Service Price:
+                          </span>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                              $
+                            </span>
+                            <input
+                              type="text"
+                              value={categoryServicePrices[category] || ""}
+                              onChange={(e) => {
+                                // Remove all non-numeric characters
+                                const value = e.target.value.replace(
+                                  /[^\d]/g,
+                                  ""
+                                );
+                                // Format with spaces for thousands
+                                const formattedValue = value
+                                  ? parseInt(value)
+                                      .toLocaleString("en-US")
+                                      .replace(/,/g, " ")
+                                  : "";
+                                updateCategoryServicePrice(
+                                  category,
+                                  formattedValue
+                                );
+                              }}
+                              className="w-32 border rounded p-2 pl-6"
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="space-y-1">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">
+                                Materials:
+                              </span>
+                              <span className="font-medium">
+                                ${formatPrice(subtotal)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">
+                                Service:
+                              </span>
+                              <span className="font-medium">
+                                $
+                                {formatPrice(
+                                  parsePriceToNumber(
+                                    categoryServicePrices[category]
+                                  ) || 0
+                                )}
+                              </span>
+                            </div>
+                            <div className="pt-1 border-t mt-1">
+                              <div className="flex justify-between">
+                                <span className="text-sm font-medium">
+                                  Category Total:
+                                </span>
+                                <span className="font-semibold">
+                                  $
+                                  {formatPrice(
+                                    subtotal +
+                                      (parsePriceToNumber(
+                                        categoryServicePrices[category]
+                                      ) || 0)
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )
               )}
@@ -513,11 +617,13 @@ const MaterialsSearch = () => {
           <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t pt-6 gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-1">Order Total</p>
-              <p className="text-2xl font-bold">${total.toFixed(2)}</p>
+              <p className="text-2xl font-bold">
+                ${formatPrice(calculateTotal())}
+              </p>
               {errorMargin > 0 && (
                 <p className="text-sm text-gray-600">
                   With {errorMargin}% margin: $
-                  {(total * (1 + errorMargin / 100)).toFixed(2)}
+                  {formatPrice(calculateTotal() * (1 + errorMargin / 100))}
                 </p>
               )}
             </div>
