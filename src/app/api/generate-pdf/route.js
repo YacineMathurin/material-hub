@@ -55,6 +55,8 @@ const calculateTotals = (groupedItems, errorMargin) => {
 
 // Function to render grouped items to HTML
 const renderItems = (groupedItems, categoryServicePrices) => {
+  console.log({ categoryServicePrices });
+
   let htmlContent = "";
   Object.keys(groupedItems).forEach((category) => {
     const group = groupedItems[category];
@@ -76,7 +78,6 @@ const renderItems = (groupedItems, categoryServicePrices) => {
       </tr>
       <tr class="category-subtotal">
         <td colspan="4">Service</td>
-        <td>$${categoryServicePrices[category].toFixed(2)}</td>
       </tr>
       <br>
     `;
