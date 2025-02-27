@@ -9,10 +9,29 @@ export default function SocialLogin() {
   const { signInWithGoogle, signInWithFacebook, signInWithTwitter } = useAuth();
   const router = useRouter();
 
+  const fetchCompanyInfo = async () => {
+    try {
+      const response = await fetch(`/api/company?sub=${currentUser.sub}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && Object.keys(data).length > 0) {
+          setCompanyInfo(data);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching company info:", error);
+    }
+  };
+
   const handleSocialLogin = async (signInMethod) => {
     try {
       await signInMethod();
-      router.push('/');
+      const res = await fetchCompanyInfo();
+      if (res) {
+        router.push('/');
+      } else {
+        router.push('/user');
+      }
     } catch (error) {
       console.error('Authentication error:', error);
     }
