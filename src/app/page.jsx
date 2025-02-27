@@ -375,362 +375,368 @@ const MaterialsSearch = () => {
         </div>
       </div>
 
-      <UnauthenticatedNotice />
+      <div className="max-w-4xl mx-auto p-4 space-y-6 min-h-screen">
+        <UnauthenticatedNotice />
 
-      {/* Main */}
-      {currentUser && (
-        <div className="max-w-4xl mx-auto p-4 space-y-6 min-h-screen">
-          <Card className="border-0 shadow-none bg-card-none">
-            <CardHeader className="pl-0">
-              <CardTitle>Search Materials</CardTitle>
-            </CardHeader>
-            <CardContent className="px-0">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search materials..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowResults(true);
-                  }}
-                  className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl 
+        {/* Main */}
+        {currentUser && (
+          <div className="max-w-4xl mx-auto p-4 space-y-6 min-h-screen">
+            <Card className="border-0 shadow-none bg-card-none">
+              <CardHeader className="pl-0">
+                <CardTitle>Search Materials</CardTitle>
+              </CardHeader>
+              <CardContent className="px-0">
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Search materials..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setShowResults(true);
+                    }}
+                    className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl 
                 shadow-sm transition-all duration-300 ease-in-out
                 hover:border-purple-400 hover:bg-white
                 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none
                 placeholder:text-gray-400"
-                />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
 
-                {showResults && searchTerm && (
-                  <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border">
-                    {filteredMaterials.map((material) => (
-                      <button
-                        key={material.id}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center justify-between"
-                        onClick={() => addItem(material)}
-                      >
-                        <span>{material.name}</span>
-                        <span className="text-gray-600">
-                          ${material.price}/{material.unit}
-                        </span>
-                      </button>
-                    ))}
+                  {showResults && searchTerm && (
+                    <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border">
+                      {filteredMaterials.map((material) => (
+                        <button
+                          key={material.id}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center justify-between"
+                          onClick={() => addItem(material)}
+                        >
+                          <span>{material.name}</span>
+                          <span className="text-gray-600">
+                            ${material.price}/{material.unit}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {showCategoryDialog && tempItem && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Select Category for {tempItem.name}
+                  </h3>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(value) => setSelectedCategory(value)}
+                  >
+                    <SelectTrigger className="w-full mb-4">
+                      <SelectValue placeholder="Choose a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowCategoryDialog(false);
+                        setTempItem(null);
+                        setSelectedCategory("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => confirmAddItem(selectedCategory)}
+                      disabled={!selectedCategory}
+                    >
+                      Add Item
+                    </Button>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {showCategoryDialog && tempItem && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-                <h3 className="text-lg font-semibold mb-4">
-                  Select Category for {tempItem.name}
-                </h3>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={(value) => setSelectedCategory(value)}
-                >
-                  <SelectTrigger className="w-full mb-4">
-                    <SelectValue placeholder="Choose a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCategoryDialog(false);
-                      setTempItem(null);
-                      setSelectedCategory("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => confirmAddItem(selectedCategory)}
-                    disabled={!selectedCategory}
-                  >
-                    Add Item
-                  </Button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Selected Materials by Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-8">
-                {Object.entries(groupedItems).map(
-                  ([category, { items, subtotal }]) => (
-                    <div
-                      key={category}
-                      className="border rounded-lg p-4 bg-white shadow-sm"
-                    >
-                      <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {category}
-                        </h3>
-                      </div>
-                      <div className="space-y-4">
-                        {items.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                          >
-                            <div className="flex-1">
-                              <h3 className="font-medium">{item.name}</h3>
-                              <p className="text-sm text-gray-600">
-                                ${item.price}/{item.unit}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                Subtotal: $
-                                {formatPrice(item.price * item.quantity)}
-                              </p>
-                            </div>
-
-                            <div className="flex flex-col md:flex-row items-center gap-4">
-                              <Select
-                                value={item.category}
-                                onValueChange={(value) =>
-                                  updateCategory(item.id, value)
-                                }
-                              >
-                                <SelectTrigger className="w-full md:w-40">
-                                  <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {categories.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                      {category}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-
-                              <div className="flex items-center gap-2 w-full md:w-auto justify-center">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => updateQuantity(item.id, -1)}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <input
-                                  type="number"
-                                  value={item.quantity}
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value) || 1;
-                                    updateItemQuantity(item.id, value);
-                                  }}
-                                  min="1"
-                                  className="w-16 text-center border rounded p-1"
-                                />
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => updateQuantity(item.id, 1)}
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
+            <Card>
+              <CardHeader>
+                <CardTitle>Selected Materials by Category</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-8">
+                  {Object.entries(groupedItems).map(
+                    ([category, { items, subtotal }]) => (
+                      <div
+                        key={category}
+                        className="border rounded-lg p-4 bg-white shadow-sm"
+                      >
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            {category}
+                          </h3>
+                        </div>
+                        <div className="space-y-4">
+                          {items.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex-1">
+                                <h3 className="font-medium">{item.name}</h3>
+                                <p className="text-sm text-gray-600">
+                                  ${item.price}/{item.unit}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Subtotal: $
+                                  {formatPrice(item.price * item.quantity)}
+                                </p>
                               </div>
 
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-red-500"
-                                onClick={() => removeItem(item.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex flex-col md:flex-row items-center gap-4">
+                                <Select
+                                  value={item.category}
+                                  onValueChange={(value) =>
+                                    updateCategory(item.id, value)
+                                  }
+                                >
+                                  <SelectTrigger className="w-full md:w-40">
+                                    <SelectValue placeholder="Select category" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {categories.map((category) => (
+                                      <SelectItem
+                                        key={category}
+                                        value={category}
+                                      >
+                                        {category}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+
+                                <div className="flex items-center gap-2 w-full md:w-auto justify-center">
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => updateQuantity(item.id, -1)}
+                                  >
+                                    <Minus className="h-4 w-4" />
+                                  </Button>
+                                  <input
+                                    type="number"
+                                    value={item.quantity}
+                                    onChange={(e) => {
+                                      const value =
+                                        parseInt(e.target.value) || 1;
+                                      updateItemQuantity(item.id, value);
+                                    }}
+                                    min="1"
+                                    className="w-16 text-center border rounded p-1"
+                                  />
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => updateQuantity(item.id, 1)}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </div>
+
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-red-500"
+                                  onClick={() => removeItem(item.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 p-4 rounded-lg border bg-gray-50">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              Service Price:
-                            </span>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                $
+                          ))}
+                        </div>
+                        <div className="mt-4 p-4 rounded-lg border bg-gray-50">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                Service Price:
                               </span>
-                              <input
-                                type="text"
-                                value={categoryServicePrices[category] || ""}
-                                onChange={(e) => {
-                                  // Remove all non-numeric characters
-                                  const value = e.target.value.replace(
-                                    /[^\d]/g,
-                                    ""
-                                  );
-                                  // Format with spaces for thousands
-                                  const formattedValue = value
-                                    ? parseInt(value)
-                                        .toLocaleString("en-US")
-                                        .replace(/,/g, " ")
-                                    : "";
-                                  updateCategoryServicePrice(
-                                    category,
-                                    formattedValue
-                                  );
-                                }}
-                                className="w-32 border rounded p-2 pl-6"
-                                placeholder="0"
-                              />
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="space-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">
-                                  Materials:
-                                </span>
-                                <span className="font-medium">
-                                  ${formatPrice(subtotal)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">
-                                  Service:
-                                </span>
-                                <span className="font-medium">
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
                                   $
-                                  {formatPrice(
-                                    parsePriceToNumber(
-                                      categoryServicePrices[category]
-                                    ) || 0
-                                  )}
                                 </span>
+                                <input
+                                  type="text"
+                                  value={categoryServicePrices[category] || ""}
+                                  onChange={(e) => {
+                                    // Remove all non-numeric characters
+                                    const value = e.target.value.replace(
+                                      /[^\d]/g,
+                                      ""
+                                    );
+                                    // Format with spaces for thousands
+                                    const formattedValue = value
+                                      ? parseInt(value)
+                                          .toLocaleString("en-US")
+                                          .replace(/,/g, " ")
+                                      : "";
+                                    updateCategoryServicePrice(
+                                      category,
+                                      formattedValue
+                                    );
+                                  }}
+                                  className="w-32 border rounded p-2 pl-6"
+                                  placeholder="0"
+                                />
                               </div>
-                              <div className="pt-1 border-t mt-1">
+                            </div>
+                            <div className="text-right">
+                              <div className="space-y-1">
                                 <div className="flex justify-between">
-                                  <span className="text-sm font-medium">
-                                    Category Total:
+                                  <span className="text-sm text-gray-600">
+                                    Materials:
                                   </span>
-                                  <span className="font-semibold">
+                                  <span className="font-medium">
+                                    ${formatPrice(subtotal)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-gray-600">
+                                    Service:
+                                  </span>
+                                  <span className="font-medium">
                                     $
                                     {formatPrice(
-                                      subtotal +
-                                        (parsePriceToNumber(
-                                          categoryServicePrices[category]
-                                        ) || 0)
+                                      parsePriceToNumber(
+                                        categoryServicePrices[category]
+                                      ) || 0
                                     )}
                                   </span>
+                                </div>
+                                <div className="pt-1 border-t mt-1">
+                                  <div className="flex justify-between">
+                                    <span className="text-sm font-medium">
+                                      Category Total:
+                                    </span>
+                                    <span className="font-semibold">
+                                      $
+                                      {formatPrice(
+                                        subtotal +
+                                          (parsePriceToNumber(
+                                            categoryServicePrices[category]
+                                          ) || 0)
+                                      )}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t pt-6 gap-4">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Order Total</p>
-                <p className="text-2xl font-bold">
-                  ${formatPrice(calculateTotal())}
-                </p>
-                {errorMargin > 0 && (
-                  <p className="text-sm text-gray-600">
-                    With {errorMargin}% margin: $
-                    {formatPrice(calculateTotal() * (1 + errorMargin / 100))}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">Error Margin:</span>
-                  <Select
-                    value={errorMargin.toString()}
-                    onValueChange={(value) => setErrorMargin(parseInt(value))}
-                  >
-                    <SelectTrigger className="w-24">
-                      <SelectValue placeholder="0%" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">0%</SelectItem>
-                      <SelectItem value="5">5%</SelectItem>
-                      <SelectItem value="10">10%</SelectItem>
-                      <SelectItem value="15">15%</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    )
+                  )}
                 </div>
-                <Button
-                  className="flex items-center gap-2"
-                  onClick={generatePDF}
-                >
-                  <Printer className="h-4 w-4" /> Generate PDF
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        </div>
-      )}
-
-      <Dialog open={isGenerating} onOpenChange={setIsGenerating}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {!pdfUrl && !error
-                ? "Generating PDF..."
-                : error
-                ? "Error"
-                : "PDF Generated"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="py-4">
-            {!pdfUrl && !error && (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2">
-                  Please wait while we generate your PDF...
-                </span>
-              </div>
-            )}
-
-            {error && <div className="text-red-500">{error}</div>}
-
-            {pdfUrl && (
-              <div className="text-green-500">
-                Your PDF has been successfully generated!
-              </div>
-            )}
+              </CardContent>
+              <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t pt-6 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Order Total</p>
+                  <p className="text-2xl font-bold">
+                    ${formatPrice(calculateTotal())}
+                  </p>
+                  {errorMargin > 0 && (
+                    <p className="text-sm text-gray-600">
+                      With {errorMargin}% margin: $
+                      {formatPrice(calculateTotal() * (1 + errorMargin / 100))}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">Error Margin:</span>
+                    <Select
+                      value={errorMargin.toString()}
+                      onValueChange={(value) => setErrorMargin(parseInt(value))}
+                    >
+                      <SelectTrigger className="w-24">
+                        <SelectValue placeholder="0%" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">0%</SelectItem>
+                        <SelectItem value="5">5%</SelectItem>
+                        <SelectItem value="10">10%</SelectItem>
+                        <SelectItem value="15">15%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    className="flex items-center gap-2"
+                    onClick={generatePDF}
+                  >
+                    <Printer className="h-4 w-4" /> Generate PDF
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
           </div>
+        )}
 
-          <DialogFooter className="sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              className="mt-2 sm:mt-0"
-            >
-              Close
-            </Button>
+        <Dialog open={isGenerating} onOpenChange={setIsGenerating}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {!pdfUrl && !error
+                  ? "Generating PDF..."
+                  : error
+                  ? "Error"
+                  : "PDF Generated"}
+              </DialogTitle>
+            </DialogHeader>
 
-            {pdfUrl && (
-              <Button onClick={handleOpenPDF} className="mt-2 sm:mt-0">
-                Open PDF
+            <div className="py-4">
+              {!pdfUrl && !error && (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <span className="ml-2">
+                    Please wait while we generate your PDF...
+                  </span>
+                </div>
+              )}
+
+              {error && <div className="text-red-500">{error}</div>}
+
+              {pdfUrl && (
+                <div className="text-green-500">
+                  Your PDF has been successfully generated!
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="sm:justify-between">
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="mt-2 sm:mt-0"
+              >
+                Close
               </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+              {pdfUrl && (
+                <Button onClick={handleOpenPDF} className="mt-2 sm:mt-0">
+                  Open PDF
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {/* Footer Section */}
       <footer className="bg-white mt-auto mt-24">

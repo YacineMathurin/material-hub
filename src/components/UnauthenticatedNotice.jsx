@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { LockKeyhole, ArrowRight } from "lucide-react";
 
 export default function UnauthenticatedNotice() {
   const { currentUser } = useAuth();
@@ -12,39 +13,30 @@ export default function UnauthenticatedNotice() {
   }
 
   return (
-    <div className="rounded-md bg-yellow-50 p-4 mb-6">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <svg
-            className="h-5 w-5 text-yellow-400"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-yellow-800">
-            Authentication required
-          </h3>
-          <div className="mt-2 text-sm text-yellow-700">
-            <p>
-              You need to be signed in to access this page. Please{" "}
-              <Link
-                href="/login"
-                className="font-medium text-yellow-800 underline hover:text-yellow-600"
-              >
-                sign in
-              </Link>{" "}
-              to continue.
-            </p>
+    <div className="flex justify-center items-center min-h-[400px] p-6">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-md w-full border border-gray-100">
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 flex justify-center">
+          <div className="bg-white/20 p-4 rounded-full">
+            <LockKeyhole className="h-8 w-8 text-white" />
           </div>
+        </div>
+
+        <div className="p-6 text-center">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+            Sign in required
+          </h2>
+
+          <p className="text-gray-600 mb-6">
+            Please sign in to access this content and continue your journey
+          </p>
+
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition-colors duration-200"
+          >
+            Sign in
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </div>
