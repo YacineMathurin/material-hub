@@ -8,9 +8,9 @@ const dbName = process.env.MONGODB_DB;
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const sub = searchParams.get("sub");
+  const uid = searchParams.get("uid");
 
-  if (!sub) {
+  if (!uid) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
 
@@ -21,7 +21,7 @@ export async function GET(request) {
     const db = client.db(dbName);
     const collection = db.collection("companyInfo");
 
-    const companyInfo = await collection.findOne({ sub });
+    const companyInfo = await collection.findOne({ uid });
 
     return NextResponse.json(companyInfo || {}, { status: 200 });
   } catch (error) {
@@ -38,7 +38,7 @@ export async function GET(request) {
 export async function POST(request) {
   const companyData = await request.json();
 
-  if (!companyData.sub) {
+  if (!companyData.uid) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
   }
 
@@ -50,12 +50,12 @@ export async function POST(request) {
     const collection = db.collection("companyInfo");
 
     // Check if a document already exists for this user
-    const existingDoc = await collection.findOne({ sub: companyData.sub });
+    const existingDoc = await collection.findOne({ uid: companyData.uid });
 
     if (existingDoc) {
       // Update existing document
       await collection.updateOne(
-        { sub: companyData.sub },
+        { uid: companyData.uid },
         { $set: companyData }
       );
     } else {

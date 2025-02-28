@@ -1,22 +1,52 @@
-// 5. Create Social Login Component (src/components/SocialLogin.jsx)
-'use client';
+// src/components/SocialLogin.jsx
+"use client";
 
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import SocialLoginButton from './SocialLoginButton';
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import SocialLoginButton from "./SocialLoginButton";
+import { useEffect, useState } from "react";
 
 export default function SocialLogin() {
-  const { signInWithGoogle, signInWithFacebook, signInWithTwitter } = useAuth();
+  const {
+    signInWithGoogle,
+    signInWithFacebook,
+    signInWithTwitter,
+    currentUser,
+  } = useAuth();
   const router = useRouter();
+
+  const [isCompanyInfo, setIsCompanyInfo] = useState(false);
+  const [fetchedCompanyInfo, setFetchedCompanyInfo] = useState(false);
+
+  useEffect(() => {
+    console.log({ currentUser, uid: currentUser?.uid });
+
+    if (currentUser) {
+      fetchCompanyInfo();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log({ currentUser, uid: currentUser?.uid, isCompanyInfo });
+
+    if (currentUser) {
+      if (isCompanyInfo) {
+        router.push("/");
+      } else {
+        router.push("/user");
+      }
+    }
+  }, [fetchedCompanyInfo]);
 
   const fetchCompanyInfo = async () => {
     try {
-      const response = await fetch(`/api/company?sub=${currentUser.sub}`);
+      const response = await fetch(`/api/company?uid=${currentUser?.uid}`);
       if (response.ok) {
         const data = await response.json();
         if (data && Object.keys(data).length > 0) {
-          setCompanyInfo(data);
+          setIsCompanyInfo(true);
         }
+        setFetchedCompanyInfo(true);
       }
     } catch (error) {
       console.error("Error fetching company info:", error);
@@ -26,14 +56,8 @@ export default function SocialLogin() {
   const handleSocialLogin = async (signInMethod) => {
     try {
       await signInMethod();
-      const res = await fetchCompanyInfo();
-      if (res) {
-        router.push('/');
-      } else {
-        router.push('/user');
-      }
     } catch (error) {
-      console.error('Authentication error:', error);
+      console.error("Authentication error:", error);
     }
   };
 
