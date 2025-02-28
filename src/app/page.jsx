@@ -15,7 +15,10 @@ import {
   Linkedin,
   Mail,
   LogOut,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 import {
   Card,
@@ -73,8 +76,28 @@ const MaterialsSearch = () => {
   const [errorMargin, setErrorMargin] = useState(0);
   const [servicePrice, setServicePrice] = useState(0);
   const [categoryServicePrices, setCategoryServicePrices] = useState({});
+  const [isClientSectionExpanded, setIsClientSectionExpanded] = useState(true);
+  const [clientInfo, setClientInfo] = useState({
+    lastName: "",
+    firstName: "",
+    phone: "",
+    email: "",
+    address: "",
+  });
 
   const { currentUser, logout } = useAuth();
+
+  const toggleClientSection = () => {
+    setIsClientSectionExpanded(!isClientSectionExpanded);
+  };
+
+  const handleClientInfoChange = (e) => {
+    const { name, value } = e.target;
+    setClientInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const filteredMaterials = materials.filter((material) =>
     material.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -381,6 +404,102 @@ const MaterialsSearch = () => {
         {/* Main */}
         {currentUser && (
           <div className="max-w-4xl mx-auto p-4 space-y-6 min-h-screen">
+            {/* Client Information Card */}
+            <Card className="border border-gray-200 shadow-sm bg-white overflow-hidden">
+              <CardHeader
+                className="pb-2 flex flex-row items-center justify-between cursor-pointer"
+                onClick={toggleClientSection}
+              >
+                <CardTitle>Client Information</CardTitle>
+                <Button variant="ghost" size="sm" className="p-1">
+                  {isClientSectionExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-500 transition-transform duration-300" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-500 transition-transform duration-300" />
+                  )}
+                </Button>
+              </CardHeader>
+
+              <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  isClientSectionExpanded
+                    ? "max-h-128 md:max-h-96 opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <CardContent className="py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        value={clientInfo.lastName}
+                        onChange={handleClientInfoChange}
+                        placeholder="Smith"
+                        className="border-gray-200 h-10 rounded-lg
+                  hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        value={clientInfo.firstName}
+                        onChange={handleClientInfoChange}
+                        placeholder="John"
+                        className="border-gray-200 h-10 rounded-lg
+                  hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        value={clientInfo.phone}
+                        onChange={handleClientInfoChange}
+                        placeholder="(555) 123-4567"
+                        className="border-gray-200 h-10 rounded-lg
+                  hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={clientInfo.email}
+                        onChange={handleClientInfoChange}
+                        placeholder="john.smith@example.com"
+                        className="border-gray-200 h-10 rounded-lg
+                  hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="address">Address</Label>
+                      <Input
+                        id="address"
+                        name="address"
+                        value={clientInfo.address}
+                        onChange={handleClientInfoChange}
+                        placeholder="123 Main St, Anytown, ST 12345"
+                        className="border-gray-200 h-10 rounded-lg
+                  hover:border-purple-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </div>
+            </Card>
+
+            {/* Search Materials Card */}
             <Card className="border-0 shadow-none bg-card-none">
               <CardHeader className="pl-0">
                 <CardTitle>Search Materials</CardTitle>
@@ -658,7 +777,7 @@ const MaterialsSearch = () => {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">Error Margin:</span>
                     <Select
