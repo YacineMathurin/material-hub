@@ -804,7 +804,7 @@ const MaterialsSearch = () => {
                 </div>
               </CardFooter>
             </Card>
-          </div>
+          </div> 
         )}
 
         <Dialog open={isGenerating} onOpenChange={setIsGenerating}>
@@ -957,3 +957,4 @@ const MaterialsSearch = () => {
 };
 
 export default MaterialsSearch;
+ 
