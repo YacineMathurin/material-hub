@@ -111,79 +111,6 @@ const MaterialsSearch = () => {
     );
   };
 
-  const addItem = (material) => {
-    setTempItem(material);
-    setShowCategoryDialog(true);
-    setShowResults(false);
-    setSearchTerm("");
-  };
-
-  const confirmAddItem = (category) => {
-    if (tempItem) {
-      const existingItem = selectedItems.find(
-        (item) => item.id === tempItem.id
-      );
-      if (existingItem) {
-        setSelectedItems(
-          selectedItems.map((item) =>
-            item.id === tempItem.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        );
-      } else {
-        setSelectedItems([
-          ...selectedItems,
-          { ...tempItem, quantity: 1, category },
-        ]);
-      }
-      setTempItem(null);
-      setShowCategoryDialog(false);
-      setSelectedCategory("");
-    }
-  };
-
-  const updateQuantity = (id, change) => {
-    setSelectedItems(
-      selectedItems.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
-    );
-  };
-
-  const removeItem = (id) => {
-    setSelectedItems(selectedItems.filter((item) => item.id !== id));
-  };
-
-  const updateCategory = (id, newCategory) => {
-    setSelectedItems(
-      selectedItems.map((item) =>
-        item.id === id ? { ...item, category: newCategory } : item
-      )
-    );
-  };
-
-  // Group items by category and calculate category subtotals
-  const groupedItems = selectedItems.reduce((acc, item) => {
-    const category = item.category || "Uncategorized";
-    if (!acc[category]) {
-      acc[category] = {
-        items: [],
-        subtotal: 0,
-      };
-    }
-    acc[category].items.push(item);
-    acc[category].subtotal += item.price * item.quantity;
-    return acc;
-  }, {});
-
-  const total = selectedItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
   const generatePDF = async () => {
     setIsGenerating(true);
     setPdfUrl(null);
@@ -262,6 +189,132 @@ const MaterialsSearch = () => {
     return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   };
 
+  //
+
+  // After searching for material, allow adding to multiple categories
+  const addItem = (material) => {
+    setTempItem(material);
+    setShowCategoryDialog(true);
+    setShowResults(false);
+    setSearchTerm("");
+  };
+
+  // Modify the confirmAddItem function to create a new unique ID for each category-item combination
+  const confirmAddItem = (category) => {
+    if (tempItem) {
+      // Create a new unique ID that combines the material ID and category
+      const newItemId = `${tempItem.id}-${category}`;
+
+      // Check if this exact item-category combination already exists
+      const existingItem = selectedItems.find(
+        (item) => item.originalId === tempItem.id && item.category === category
+      );
+
+      if (existingItem) {
+        // If this item already exists in this category, just update quantity
+        setSelectedItems(
+          selectedItems.map((item) =>
+            item.originalId === tempItem.id && item.category === category
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
+      } else {
+        // Otherwise add as a new item with the original ID reference
+        setSelectedItems([
+          ...selectedItems,
+          {
+            ...tempItem,
+            id: newItemId,
+            originalId: tempItem.id,
+            quantity: 1,
+            category,
+          },
+        ]);
+      }
+      setTempItem(null);
+      setShowCategoryDialog(false);
+      setSelectedCategory("");
+    }
+  };
+
+  // Update the updateQuantity function to handle the new ID structure
+  const updateQuantity = (id, change) => {
+    setSelectedItems(
+      selectedItems.map((item) =>
+        item.id === id
+          ? { ...item, quantity: Math.max(1, item.quantity + change) }
+          : item
+      )
+    );
+  };
+
+  // Update the removeItem function to work with the new ID structure
+  const removeItem = (id) => {
+    setSelectedItems(selectedItems.filter((item) => item.id !== id));
+  };
+
+  // The updateCategory function can be simplified as items now have fixed categories
+  // and would need to be removed and re-added to change categories
+  const updateCategory = (id, newCategory) => {
+    const itemToUpdate = selectedItems.find((item) => item.id === id);
+
+    if (itemToUpdate) {
+      // First remove the item from its current category
+      const updatedItems = selectedItems.filter((item) => item.id !== id);
+
+      // Create a new ID for the item in its new category
+      const newItemId = `${itemToUpdate.originalId}-${newCategory}`;
+
+      // Check if the item already exists in the target category
+      const existingItemInCategory = selectedItems.find(
+        (item) =>
+          item.originalId === itemToUpdate.originalId &&
+          item.category === newCategory
+      );
+
+      if (existingItemInCategory) {
+        // If it exists, increase quantity in the target category
+        updatedItems.map((item) =>
+          item.id === existingItemInCategory.id
+            ? { ...item, quantity: item.quantity + itemToUpdate.quantity }
+            : item
+        );
+      } else {
+        // Otherwise add it as a new item in the new category
+        updatedItems.push({
+          ...itemToUpdate,
+          id: newItemId,
+          category: newCategory,
+        });
+      }
+
+      setSelectedItems(updatedItems);
+    }
+  };
+
+  // Group items by category and calculate category subtotals
+  // This function remains mostly the same but now works with the new ID structure
+  const groupedItems = selectedItems.reduce((acc, item) => {
+    const category = item.category || "Uncategorized";
+    if (!acc[category]) {
+      acc[category] = {
+        items: [],
+        subtotal: 0,
+      };
+    }
+    acc[category].items.push(item);
+    acc[category].subtotal += item.price * item.quantity;
+    return acc;
+  }, {});
+
+  // The total calculation remains the same
+  const total = selectedItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  //
   const router = useRouter();
 
   return (
@@ -804,7 +857,7 @@ const MaterialsSearch = () => {
                 </div>
               </CardFooter>
             </Card>
-          </div> 
+          </div>
         )}
 
         <Dialog open={isGenerating} onOpenChange={setIsGenerating}>
@@ -957,4 +1010,3 @@ const MaterialsSearch = () => {
 };
 
 export default MaterialsSearch;
- 
